@@ -170,9 +170,14 @@
 
   html, body { cursor:none; }
   a, button, .btn, .nav-links a, .offer, input, textarea, select { cursor:none; }
+  /* when any modal is open, hand control back to the native cursor (the custom cursor
+     can't track over modal iframes), so the pointer always works inside case studies */
+  body.native-cursor, body.native-cursor * { cursor:auto !important; }
+  body.native-cursor a, body.native-cursor button, body.native-cursor .btn, body.native-cursor [role="button"] { cursor:pointer !important; }
+  body.native-cursor #cursor { opacity:0 !important; }
   #cursor {
     position:fixed; top:0; left:0; width:14px; height:14px; margin-left:-7px; margin-top:-7px;
-    --cursor-color:#4F86F7; background:var(--cursor-color,var(--ink));
+    --cursor-color:#FF2D8E; background:var(--cursor-color,var(--ink));
     pointer-events:none; z-index:9999; translate:-200px -200px;
     transition:width .55s var(--ease),height .55s var(--ease),border-radius .55s var(--ease),background-color .55s var(--ease),border-width .55s var(--ease),border-color .55s var(--ease),clip-path .55s var(--ease),rotate .55s var(--ease),opacity .35s var(--ease);
     will-change:translate; border:0 solid var(--cursor-color,var(--ink));
@@ -226,14 +231,14 @@
   .proc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
   .proc { background:var(--paper); padding:40px 32px 34px; display:flex; flex-direction:column; gap:18px; min-height:340px; transition:background .4s var(--ease); }
   .proc:hover { background:var(--paper-2); }
-  .proc .p-idx { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#4F86F7; display:flex; align-items:center; gap:12px; margin-bottom:28px; }
-  .proc .p-idx .tk { width:6px; height:6px; background:#4F86F7; display:inline-block; }
+  .proc .p-idx { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink); display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  .proc .p-idx .tk { width:6px; height:6px; background:var(--ink); display:inline-block; }
   .proc h3 { margin:0; font-family:'Inter Tight',sans-serif; font-weight:300; font-size:32px; line-height:1; letter-spacing:-0.035em; text-transform:lowercase; color:var(--ink); }
   .proc h3 b { font-weight:500; }
   .proc .p-desc { font-size:14.5px; line-height:1.6; color:var(--ink-2); margin:0; }
   .proc .p-list { display:flex; flex-direction:column; gap:8px; margin-top:auto; padding-top:20px; border-top:1px solid var(--line); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-3); }
   .proc .p-list span { display:flex; gap:11px; align-items:center; }
-  .proc .p-list span::before { content:""; width:6px; height:1.5px; background:#4F86F7; flex-shrink:0; }
+  .proc .p-list span::before { content:""; width:6px; height:1.5px; background:var(--ink); flex-shrink:0; }
   @media (max-width:980px){ .proc-grid { grid-template-columns:1fr; } .proc { min-height:0; } }
   .mo-curves { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; position:relative; z-index:2; }
   .mo-curves .cc { aspect-ratio:1/1; border:1px solid rgba(110,160,255,0.30); background:radial-gradient(120% 130% at 70% 12%, rgba(43,200,232,0.12), transparent 60%), rgba(79,134,247,0.06); position:relative; overflow:hidden; }
@@ -436,7 +441,7 @@
     .hero { padding:32px 0 64px; }
     .hero-body { grid-template-columns:1fr; gap:56px; margin-top:40px; }
     .hero-side { align-items:flex-start; }
-    .hero-side .photo, .hero-photo-meta { max-width:330px; width:100%; margin-top:0; }
+    .hero-side .photo, .hero-photo-meta { max-width:330px; width:100%; margin-top:0; align-self:flex-start; }
     .section-head { grid-template-columns:1fr; gap:24px; padding-bottom:56px; }
     .section-head .stk-block { display:none; }
     .offers { grid-template-columns:1fr; }
@@ -520,7 +525,7 @@
         <div class="center reveal d1">
           <span class="monogram" aria-hidden="true" data-parallax="-0.08">
             <span class="row">A / S</span>
-            <span class="row">/ MOT</span>
+            <span class="row">/ MOV</span>
             <span class="row bot">— · — — ·</span>
           </span>
         </div>
@@ -931,7 +936,7 @@
           <div class="deliverables">
             <span class="li">Interface motion system</span>
             <span class="li">Transition + microinteraction library</span>
-            <span class="li">Duration + easing token set</span>
+            <span class="li">Standardized duration + easing</span>
             <span class="li">Motion spec + dev handoff</span>
           </div>
           <div class="specs"><div><div class="time">2–3 weeks</div><div class="price">$10–25K</div></div></div>
@@ -1066,28 +1071,39 @@
         <div class="faq-item reveal">
           <button class="faq-q" type="button" aria-expanded="false">
             <span class="faq-num">/ 02</span>
-            <span class="faq-q-text">How do you work with product and engineering?</span>
+            <span class="faq-q-text">What kinds of motion do you design?</span>
             <span class="faq-icon" aria-hidden="true"></span>
           </button>
           <div class="faq-a"><div class="faq-a-inner"><div class="faq-a-pad">
-            <p class="faq-a-body">Inside the team, not over the wall. I prototype in <em>Figma</em>, hand off motion specs engineers can build from, and stay close through implementation so the motion ships the way it was designed.</p>
+            <p class="faq-a-body">Every motion that earns its place does a job — <em>gesture confirmation, latency masking, motion affordance, and spatial continuity.</em> Transitions, microinteractions, loading and state feedback, navigation, and cinematic hero moments. If a motion doesn't improve clarity, speed, or feel, it doesn't ship.</p>
           </div></div></div>
         </div>
 
         <div class="faq-item reveal">
           <button class="faq-q" type="button" aria-expanded="false">
             <span class="faq-num">/ 03</span>
-            <span class="faq-q-text">Do you only do motion, or full UX?</span>
+            <span class="faq-q-text">How do you keep motion consistent across a product?</span>
             <span class="faq-icon" aria-hidden="true"></span>
           </button>
           <div class="faq-a"><div class="faq-a-inner"><div class="faq-a-pad">
-            <p class="faq-a-body">Both. Motion is grounded in <em>real user needs</em> and the underlying UX — I design the flow and the feel together, then make every transition earn its place.</p>
+            <p class="faq-a-body">A motion system — a standardized <em>duration scale and a small set of easing curves</em> every motion is built from, delivered as tokens. Fewer choices is what makes motion feel like one product and lets engineering implement it without guesswork.</p>
           </div></div></div>
         </div>
 
         <div class="faq-item reveal">
           <button class="faq-q" type="button" aria-expanded="false">
             <span class="faq-num">/ 04</span>
+            <span class="faq-q-text">How do you work with product and engineering?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner"><div class="faq-a-pad">
+            <p class="faq-a-body">Inside the team, not over the wall. I hand off motion specs engineers can build from, and stay close through implementation so the motion ships the way it was designed.</p>
+          </div></div></div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-q" type="button" aria-expanded="false">
+            <span class="faq-num">/ 05</span>
             <span class="faq-q-text">What's your background?</span>
             <span class="faq-icon" aria-hidden="true"></span>
           </button>
@@ -1098,7 +1114,7 @@
 
         <div class="faq-item reveal">
           <button class="faq-q" type="button" aria-expanded="false">
-            <span class="faq-num">/ 05</span>
+            <span class="faq-num">/ 06</span>
             <span class="faq-q-text">How do you handle ambiguous, early-stage work?</span>
             <span class="faq-icon" aria-hidden="true"></span>
           </button>
@@ -1109,7 +1125,7 @@
 
         <div class="faq-item reveal">
           <button class="faq-q" type="button" aria-expanded="false">
-            <span class="faq-num">/ 06</span>
+            <span class="faq-num">/ 07</span>
             <span class="faq-q-text">Are you available?</span>
             <span class="faq-icon" aria-hidden="true"></span>
           </button>
@@ -1201,6 +1217,9 @@ class Component extends DCLogic {
     document.querySelectorAll('.faq-item').forEach(item => {
       const q = item.querySelector('.faq-q');
       if (!q) return;
+      // prevent the button from grabbing focus on click — focus-scroll-into-view is what
+      // made the page "pop" when a FAQ opened and the layout below it shifted
+      q.addEventListener('mousedown', (e) => e.preventDefault());
       q.addEventListener('click', () => {
         const isOpen = item.classList.contains('open');
         // accordion: close siblings for a calmer, less "jumpy" feel
@@ -1344,6 +1363,40 @@ class Component extends DCLogic {
           }
         });
       } catch (err) { /* cross-origin — ignore */ }
+
+      // keep the custom pink cursor working over the (same-origin) case-study iframe:
+      // hide the iframe's native cursor and forward its mouse movement to the parent cursor
+      try {
+        const doc = frame.contentDocument;
+        const cursor = document.getElementById('cursor');
+        if (doc && cursor) {
+          if (!doc.getElementById('__cursorHide')) {
+            const st = doc.createElement('style');
+            st.id = '__cursorHide';
+            st.textContent = '*{cursor:none !important;}';
+            doc.head.appendChild(st);
+          }
+          const hot = 'a, button, [role="button"], .cta, .back, input, textarea, select';
+          const win = frame.contentWindow;
+          doc.addEventListener('mousemove', (e) => {
+            const r = frame.getBoundingClientRect();
+            cursor.style.opacity = '1';
+            window.dispatchEvent(new MouseEvent('mousemove', {
+              clientX: r.left + e.clientX, clientY: r.top + e.clientY
+            }));
+          }, { passive: true });
+          doc.addEventListener('mouseover', (e) => {
+            if (e.target.closest && e.target.closest(hot)) cursor.classList.add('hot');
+          });
+          doc.addEventListener('mouseout', (e) => {
+            if (e.target.closest && e.target.closest(hot)) {
+              const to = e.relatedTarget;
+              if (!to || !to.closest || !to.closest(hot)) cursor.classList.remove('hot');
+            }
+          });
+          win.addEventListener('mouseleave', () => cursor.classList.remove('hot'));
+        }
+      } catch (err) { /* cross-origin — ignore */ }
     });
 
     document.querySelectorAll('[data-cs-open]').forEach(b => {
@@ -1401,25 +1454,11 @@ class Component extends DCLogic {
 
   initParallax() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const nodes = Array.from(document.querySelectorAll('[data-parallax]'));
-    if (!nodes.length) return;
-    const items = nodes.map(el => {
-      const base = getComputedStyle(el).transform;
-      return { el, rate: parseFloat(el.dataset.parallax) || 0, base: (base && base !== 'none') ? base : '' };
-    });
-    let ticking = false;
-    const update = () => {
-      const y = window.scrollY;
-      for (const it of items) {
-        const t = 'translate3d(0, ' + (y * it.rate).toFixed(2) + 'px, 0)';
-        it.el.style.transform = it.base ? (it.base + ' ' + t) : t;
-      }
-      ticking = false;
-    };
-    window.addEventListener('scroll', () => {
-      if (!ticking) { requestAnimationFrame(update); ticking = true; }
-    }, { passive: true });
-    update();
+    // Parallax disabled: in this scroll-container environment the page scrolls in an outer
+    // wrapper, so scroll-linked transforms recalculated against window.scrollY caused the page
+    // to visibly "pop" up and down. Clear any transforms and attach no scroll listeners.
+    document.querySelectorAll('[data-parallax]').forEach(el => { el.style.transform = ''; });
+    return;
   }
 
   initCursor() {
@@ -1503,6 +1542,31 @@ class Component extends DCLogic {
       dots.forEach((el, idx) => el.classList.toggle('active', idx === i));
     }
     function restart() { if (timer) clearInterval(timer); timer = setInterval(() => go(i + 1), 8000); }
+    // lock the track to the tallest item's height so auto-advance never reflows the page below it
+    function lockHeight() {
+      let max = 0;
+      const prevActive = track.querySelector('.testi-item.active');
+      items.forEach(el => {
+        const wasActive = el.classList.contains('active');
+        el.style.transition = 'none';
+        el.style.position = 'relative';
+        el.style.visibility = 'hidden';
+        el.style.opacity = '0';
+        max = Math.max(max, el.offsetHeight);
+        el.style.position = '';
+        el.style.visibility = '';
+        el.style.opacity = '';
+        el.classList.toggle('active', wasActive);
+        // force reflow then restore transition
+        void el.offsetHeight;
+        el.style.transition = '';
+      });
+      if (prevActive) prevActive.classList.add('active');
+      if (max) track.style.minHeight = max + 'px';
+    }
+    lockHeight();
+    let rt = null;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(lockHeight, 200); }, { passive: true });
     if (prev) prev.addEventListener('click', () => { go(i - 1); restart(); });
     if (next) next.addEventListener('click', () => { go(i + 1); restart(); });
     dots.forEach(d => d.addEventListener('click', () => { go(parseInt(d.dataset.i, 10)); restart(); }));
