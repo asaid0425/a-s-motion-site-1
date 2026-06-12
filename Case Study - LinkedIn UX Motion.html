@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>linkedin · ux motion system — case study / ali said</title>
+<meta name="description" content="Building motion as a tier of the design system — audit, a standardized duration + curve set, and a token-driven dev handoff. Case study by Ali Said." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper:#0E0E0C; --paper-2:#161613; --paper-3:#1E1E1A;
+    --ink:#EFEDE6; --ink-2:#D2CFC6; --ink-3:#918F88; --ink-4:#5D5C56;
+    --line:rgba(239,237,230,0.12); --line-2:rgba(239,237,230,0.24); --hair:rgba(239,237,230,0.08);
+    --container:880px; --gutter:40px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Inter Tight',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; font-size:16px; line-height:1.5; letter-spacing:-0.005em; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overflow-x:hidden; font-feature-settings:"ss01","cv11"; }
+  ::selection { background:var(--ink); color:var(--paper); }
+  a { color:inherit; text-decoration:none; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,Menlo,monospace; }
+  .wrap { max-width:var(--container); margin:0 auto; padding:0 var(--gutter); }
+  .eyebrow { font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-3); display:flex; align-items:center; gap:12px; }
+  .eyebrow b { color:var(--ink); font-weight:500; }
+  .eyebrow .tick { width:5px; height:5px; background:var(--ink); display:inline-block; }
+  .slash { color:var(--ink-3); font-weight:300; padding:0 0.04em; }
+  .morse { display:inline-flex; align-items:center; gap:4px; height:6px; color:var(--ink-3); }
+  .morse i { display:inline-block; height:1.5px; background:currentColor; }
+  .morse i.d { width:1.5px; } .morse i.l { width:9px; } .morse i.m { width:14px; } .morse i.g { width:4px; opacity:0; }
+
+  .top { position:sticky; top:0; z-index:20; background:rgba(14,14,12,0.82); backdrop-filter:saturate(1.4) blur(18px); -webkit-backdrop-filter:saturate(1.4) blur(18px); border-bottom:1px solid var(--line); }
+  .top .row { max-width:var(--container); margin:0 auto; padding:13px var(--gutter); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  .top .brand { display:inline-flex; align-items:center; gap:12px; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-2); }
+  .top .brand .mg { width:26px; height:26px; border:1.25px solid var(--ink); display:grid; place-content:center; font-size:7.5px; line-height:1; letter-spacing:0.12em; color:var(--ink); }
+  .top .back { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-3); display:inline-flex; align-items:center; gap:9px; transition:color .3s var(--ease); }
+  .top .back:hover { color:var(--ink); }
+
+  .hero { padding:88px 0 56px; border-bottom:1px solid var(--line); }
+  .hero .meta { display:flex; gap:22px; flex-wrap:wrap; margin-top:26px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-4); }
+  .hero .meta b { color:var(--ink-2); font-weight:500; }
+  h1 { font-size:clamp(38px,7.4vw,78px); line-height:0.97; letter-spacing:-0.045em; font-weight:300; margin:22px 0 0; text-transform:lowercase; }
+  h1 b { font-weight:500; }
+  .lead { font-size:clamp(18px,2.4vw,24px); line-height:1.5; font-weight:300; color:var(--ink-2); margin:24px 0 0; max-width:62ch; text-wrap:pretty; }
+  .lead em { font-style:normal; color:var(--ink); font-weight:500; }
+
+  section.s { padding:64px 0; border-bottom:1px solid var(--line); }
+  section.s:last-of-type { border-bottom:0; }
+  .s-head { display:flex; align-items:baseline; gap:16px; margin-bottom:30px; }
+  .s-head .n { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-3); }
+  h2 { font-size:clamp(26px,3.6vw,40px); font-weight:300; letter-spacing:-0.035em; line-height:1.04; margin:0; text-transform:lowercase; text-wrap:balance; }
+  h2 b { font-weight:500; }
+  p.body { font-size:16.5px; line-height:1.6; color:var(--ink-2); margin:0; max-width:64ch; text-wrap:pretty; }
+  p.body + p.body { margin-top:16px; }
+  p.body em { font-style:normal; color:var(--ink); font-weight:500; }
+  .sub { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-3); display:flex; align-items:center; gap:11px; margin:34px 0 16px; }
+  .sub b { color:var(--ink); font-weight:500; }
+  .sub .tick { width:4px; height:4px; background:var(--ink); display:inline-block; }
+
+  .plate { position:relative; border:1px solid var(--line-2); background:linear-gradient(150deg,#18181500,#0b0b0900); aspect-ratio:16/9; overflow:hidden; margin:30px 0 0; }
+  .plate .pe { position:absolute; inset:0; display:grid; place-content:center; text-align:center; font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.24em; text-transform:uppercase; color:var(--ink-4); }
+  .plate .pe small { display:block; margin-top:9px; font-size:8.5px; letter-spacing:0.26em; }
+  .plate .pt { position:absolute; left:13px; top:12px; font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-3); }
+  .plate .pm { position:absolute; right:13px; bottom:11px; font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--ink-4); }
+  .plate .cnr { position:absolute; width:11px; height:11px; border:1px solid var(--line-2); }
+  .plate .cnr.tl { top:7px; left:7px; border-right:0; border-bottom:0; }
+  .plate .cnr.tr { top:7px; right:7px; border-left:0; border-bottom:0; }
+  .plate .cnr.bl { bottom:7px; left:7px; border-right:0; border-top:0; }
+  .plate .cnr.br { bottom:7px; right:7px; border-left:0; border-top:0; }
+
+  /* duration scale */
+  .dur { margin-top:8px; }
+  .dur-row { display:grid; grid-template-columns:170px 64px 1fr; gap:18px; align-items:center; padding:14px 0; border-bottom:1px solid var(--line); }
+  .dur-row .tok { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink); }
+  .dur-row .ms { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-2); }
+  .dur-row .bar { height:6px; background:var(--line); position:relative; }
+  .dur-row .bar i { position:absolute; left:0; top:0; bottom:0; background:var(--ink); }
+
+  /* curves */
+  .curves { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:8px; }
+  .cv { border:1px solid var(--line-2); padding:16px; display:flex; flex-direction:column; gap:11px; }
+  .cv .sv { aspect-ratio:1/1; background:var(--paper-2); border:1px solid var(--line); position:relative; overflow:hidden; }
+  .cv .nm { font-size:15px; font-weight:500; color:var(--ink); text-transform:lowercase; }
+  .cv .bz { font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--ink-3); word-break:break-all; }
+  .cv .us { font-size:12.5px; line-height:1.45; color:var(--ink-2); }
+
+  /* spec table */
+  .spec { border:1px solid var(--line); margin-top:8px; }
+  .spec .r { display:grid; grid-template-columns:1.3fr 1fr 0.9fr 1fr 0.6fr; }
+  .spec .r > div { padding:11px 14px; border-bottom:1px solid var(--hair); border-left:1px solid var(--hair); font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-2); }
+  .spec .r > div:first-child { border-left:0; }
+  .spec .r.h > div { font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-4); background:rgba(239,237,230,0.03); }
+  .spec .r:last-child > div { border-bottom:0; }
+  .spec .r .em { color:var(--ink); }
+
+  /* code */
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px; }
+  .code { border:1px solid var(--line); background:rgba(0,0,0,0.3); overflow:hidden; }
+  .code .cb { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid var(--hair); font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-4); }
+  .code pre { margin:0; padding:16px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.65; color:var(--ink-2); }
+  .code pre .k { color:#9ecbff; } .code pre .s { color:#dcc88c; } .code pre .c { color:var(--ink-4); } .code pre .n { color:#cdb4ff; }
+
+  .pull { margin:0; padding:36px 0 8px; font-size:clamp(22px,3vw,32px); line-height:1.32; font-weight:300; letter-spacing:-0.025em; color:var(--ink); max-width:26ch; text-wrap:balance; }
+  .pull b { font-weight:500; }
+
+  .results { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-top:24px; }
+  .results > div { background:var(--paper); padding:24px 20px; }
+  .results .k { font-size:clamp(28px,4vw,42px); font-weight:300; letter-spacing:-0.03em; color:var(--ink); }
+  .results .v { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-3); margin-top:8px; line-height:1.5; }
+
+  .close { padding:80px 0 96px; }
+  .close h2 { font-size:clamp(32px,5.4vw,60px); }
+  .close .lead { margin-top:24px; }
+  .close .cta { margin-top:36px; display:inline-flex; align-items:center; gap:11px; height:46px; padding:0 22px; background:var(--ink); color:var(--paper); font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.2em; text-transform:uppercase; font-weight:500; transition:transform .35s var(--ease),background .35s var(--ease); }
+  .close .cta:hover { transform:translateY(-1px); background:#d8d6cd; }
+
+  .foot { padding:30px 0; border-top:1px solid var(--line); }
+  .foot .row { display:flex; align-items:center; justify-content:space-between; gap:16px; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-4); }
+
+  .reveal { opacity:0; transform:translateY(16px); transition:opacity .9s var(--ease),transform .9s var(--ease); }
+  .reveal.in { opacity:1; transform:none; }
+
+  @media (max-width:720px) {
+    :root { --gutter:22px; }
+    section.s { padding:48px 0; }
+    .hero { padding:56px 0 40px; }
+    .curves { grid-template-columns:1fr 1fr; }
+    .cols { grid-template-columns:1fr; }
+    .spec .r { grid-template-columns:1.4fr 1fr 0.9fr; }
+    .spec .r > div:nth-child(4), .spec .r > div:nth-child(5) { display:none; }
+    .dur-row { grid-template-columns:130px 56px 1fr; }
+    .results { grid-template-columns:1fr; }
+  }
+  @media (max-width:480px) { .curves { grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } .reveal { opacity:1; transform:none; } }
+
+  .dg2 { position:relative; border:1px solid rgba(110,160,255,0.26); background:radial-gradient(120% 130% at 80% 10%, rgba(43,200,232,0.12), transparent 55%), radial-gradient(110% 120% at 16% 95%, rgba(79,134,247,0.16), transparent 60%), #0a0e18; overflow:hidden; padding:26px 26px 18px; }
+  .dg2 svg { display:block; width:100%; height:auto; }
+  .dg2 .cap { display:block; margin-top:14px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(150,180,235,0.7); }
+  .dg2-wide { margin-top:30px; }
+  .method { display:grid; grid-template-columns:1fr; gap:0; margin-top:30px; border-top:1px solid var(--line); }
+  .mstep { display:grid; grid-template-columns:46px 1fr; gap:18px; align-items:start; padding:18px 0; border-bottom:1px solid var(--line); }
+  .mstep .mi { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#6FB4FF; padding-top:2px; }
+  .mstep .md { font-size:15.5px; line-height:1.55; color:var(--ink-2); }
+  .mstep .md em { color:var(--ink); font-style:normal; font-weight:500; }
+  .mtypes { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:30px; }
+  .mt { border:1px solid var(--line-2); background:var(--paper-2); display:flex; flex-direction:column; overflow:hidden; }
+  .mt .mt-dg { position:relative; aspect-ratio:16/10; border-bottom:1px solid var(--line); overflow:hidden; background:#0a0e18; }
+  .mt .mt-dg svg { position:absolute; inset:0; width:100%; height:100%; }
+  .mt .mt-body { padding:20px 22px 22px; display:flex; flex-direction:column; gap:10px; }
+  .mt .mt-k { font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.18em; text-transform:uppercase; }
+  .mt .mt-t { font-size:19px; font-weight:500; letter-spacing:-0.01em; color:var(--ink); text-transform:lowercase; }
+  .mt .mt-d { font-size:14px; line-height:1.55; color:var(--ink-2); }
+  .mt .mt-uxv { margin-top:3px; padding-top:13px; border-top:1px solid var(--line); display:flex; gap:11px; align-items:baseline; }
+  .mt .mt-uxv .lbl { font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-4); flex-shrink:0; padding-top:2px; }
+  .mt .mt-uxv .val { font-size:13.5px; line-height:1.5; color:var(--ink); font-weight:500; }
+  @media (max-width:720px){ .mtypes { grid-template-columns:1fr; } }
+
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="row">
+    <a class="brand" href="Ali Said — UX Motion.dc.html"><span class="mg">A/S</span> ali <span style="color:var(--ink-4)">/</span> said</a>
+    <a class="back" href="Ali Said — UX Motion.dc.html">← <span>close case study</span></a>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow reveal"><span class="tick"></span> case study <span class="slash">/</span> 03 — linkedin · motion system</div>
+    <h1 class="reveal">ux motion <span class="slash">/</span> <b>system.</b></h1>
+    <p class="lead reveal">Turning scattered one-off animations into a coherent motion language — by auditing every flow, breaking each screen into states, and designing only the motion that measurably improves the experience.</p>
+    <div class="meta reveal">
+      <span><b>role</b> · ux motion + systems</span>
+      <span><b>scope</b> · product-wide</span>
+      <span><b>output</b> · motion framework</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="s">
+    <div class="wrap">
+      <div class="s-head reveal"><span class="n">/ 01</span> <h2>the <b>audit.</b></h2></div>
+      <p class="body reveal">Motion already existed across LinkedIn — but as scattered one-offs, every team inventing its own by feel. <em>Before designing anything new, I inventoried every motion in the product</em> and sorted each one by the job it was actually doing for the user.</p>
+      <div class="dg2-wide reveal"><div class="dg2"><svg viewBox="0 0 1200 250" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g transform="translate(24,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#4F86F7"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#4F86F7" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#4F86F7" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#4F86F7" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(170,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#6FB4FF"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#6FB4FF" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#6FB4FF" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#6FB4FF" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(316,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#2AB8E0"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#2AB8E0" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#2AB8E0" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#2AB8E0" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(462,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#8AA0FF"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#8AA0FF" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#8AA0FF" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#8AA0FF" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(608,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#4F86F7"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#4F86F7" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#4F86F7" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#4F86F7" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(754,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#6FB4FF"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#6FB4FF" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#6FB4FF" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#6FB4FF" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(900,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#2AB8E0"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#2AB8E0" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#2AB8E0" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#2AB8E0" stroke-opacity="0.4" stroke-width="1"/></g><g transform="translate(1046,26)"><rect width="118" height="150" rx="4" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.26)"/><circle cx="34" cy="104" r="6" fill="#8AA0FF"/><path d="M34,104 C60,80 80,62 90,40" fill="none" stroke="#8AA0FF" stroke-width="1.5" stroke-dasharray="3 4"/><circle cx="90" cy="40" r="3.5" fill="none" stroke="#8AA0FF" stroke-width="1.5"/><line x1="16" y1="128" x2="74" y2="128" stroke="#8AA0FF" stroke-opacity="0.4" stroke-width="1"/></g><path d="M24,200 L24,210 L1176,210 L1176,200" fill="none" stroke="rgba(120,160,230,0.4)" stroke-width="1"/><text x="600" y="236" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="3" fill="rgba(150,180,235,0.85)">EVERY MOTION · CAPTURED &amp; GROUPED BY INTENT</text></svg><span class="cap">motion inventory — every existing animation captured, then grouped by intent</span></div></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap">
+      <div class="s-head reveal"><span class="n">/ 02</span> <h2>the <b>method.</b></h2></div>
+      <p class="body reveal">I don't treat motion as decoration laid on top. I break every screen into its <em>states</em> — the initial and final state of each interaction — and treat the space between them as the real design surface.</p>
+      <div class="dg2-wide reveal"><div class="dg2"><svg viewBox="0 0 1200 320" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="70" y="44" width="360" height="200" rx="6" fill="rgba(80,130,240,0.04)" stroke="rgba(120,160,230,0.3)"/><rect x="96" y="74" width="308" height="42" rx="4" fill="none" stroke="#6FB4FF" stroke-opacity="0.75"/><rect x="96" y="130" width="308" height="13" rx="3" fill="rgba(120,160,230,0.2)"/><rect x="96" y="152" width="232" height="13" rx="3" fill="rgba(120,160,230,0.13)"/><rect x="96" y="174" width="276" height="13" rx="3" fill="rgba(120,160,230,0.1)"/><rect x="770" y="44" width="360" height="200" rx="6" fill="rgba(80,130,240,0.05)" stroke="rgba(120,160,230,0.35)"/><rect x="794" y="68" width="312" height="120" rx="5" fill="rgba(79,134,247,0.1)" stroke="#4F86F7"/><rect x="814" y="90" width="180" height="13" rx="3" fill="rgba(180,205,255,0.55)"/><rect x="814" y="114" width="260" height="11" rx="3" fill="rgba(150,180,235,0.3)"/><rect x="814" y="134" width="230" height="11" rx="3" fill="rgba(150,180,235,0.22)"/><rect x="814" y="154" width="120" height="20" rx="10" fill="none" stroke="#2AB8E0" stroke-opacity="0.8"/><path d="M430,150 C565,108 635,108 770,150" fill="none" stroke="#2AB8E0" stroke-width="1.75" stroke-dasharray="4 5"/><circle cx="600" cy="119" r="11" fill="none" stroke="#2AB8E0" stroke-opacity="0.4"/><circle cx="600" cy="119" r="5" fill="#2AB8E0"/><text x="600" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="2.5" fill="#7FC9EC">MOTION OPPORTUNITY</text><text x="250" y="286" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2.5" fill="rgba(150,180,235,0.75)">INITIAL STATE</text><text x="950" y="286" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2.5" fill="rgba(150,180,235,0.75)">FINAL STATE</text></svg><span class="cap">every initial state → final state — the gap between them is where motion lives</span></div></div>
+      <div class="method reveal">
+        <div class="mstep"><div class="mi">01</div><div class="md">Map each screen as a set of states — <em>every initial and final state</em> for every interaction in the app.</div></div>
+        <div class="mstep"><div class="mi">02</div><div class="md">Between every pair of states sits a gap. <em>That gap is an opportunity for motion</em> — I look at all of them, not just the obvious ones.</div></div>
+        <div class="mstep"><div class="mi">03</div><div class="md">Each candidate answers one question: <em>does it make the product easier to understand or use?</em> Every decision is rooted in UX — never in spectacle.</div></div>
+        <div class="mstep"><div class="mi">04</div><div class="md">What survives is motion that does a job. <em>Everything else is cut.</em></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap">
+      <div class="s-head reveal"><span class="n">/ 03</span> <h2>four types of <b>motion.</b></h2></div>
+      <p class="body reveal">Every motion that earns its place does one of four jobs. Naming them gave the team a shared language — and a test for whether a given animation belongs at all.</p>
+      <div class="mtypes reveal">
+        <div class="mt"><div class="mt-dg"><svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><circle cx="72" cy="46" r="30" fill="none" stroke="#4F86F7" stroke-opacity="0.2"/><circle cx="72" cy="46" r="20" fill="none" stroke="#4F86F7" stroke-opacity="0.45"/><circle cx="72" cy="46" r="9" fill="#4F86F7" fill-opacity="0.9"/><path d="M72,46 L96,68 L85,70 L91,82 L84,85 L78,73 L70,80 Z" fill="#cfe0ff" stroke="#4F86F7" stroke-width="0.8"/></svg></div><div class="mt-body"><div class="mt-k" style="color:#4F86F7;">type 01</div><div class="mt-t">gesture confirmation</div><div class="mt-d">Motion that answers the user's input the instant it happens — a press depresses, a swipe tracks the finger, a toggle snaps home.</div><div class="mt-uxv"><span class="lbl">ux value</span><span class="val">Trust — the user never has to wonder whether their action registered.</span></div></div></div>
+        <div class="mt"><div class="mt-dg"><svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="38" y="34" width="78" height="32" rx="6" fill="rgba(111,180,255,0.08)" stroke="#6FB4FF"/><rect x="44" y="40" width="78" height="32" rx="6" fill="none" stroke="#6FB4FF" stroke-opacity="0.3" stroke-dasharray="3 3"/><path d="M120,56 L142,56 M135,49 L142,56 L135,63" fill="none" stroke="#6FB4FF" stroke-width="1.5"/></svg></div><div class="mt-body"><div class="mt-k" style="color:#6FB4FF;">type 02</div><div class="mt-t">motion affordance</div><div class="mt-d">Motion that reveals what an element can do before it is touched — a gentle nudge, a peek, a settle that says “I can move.”</div><div class="mt-uxv"><span class="lbl">ux value</span><span class="val">Discoverability — the interface teaches its own gestures without a tooltip.</span></div></div></div>
+        <div class="mt"><div class="mt-dg"><svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><g opacity="0.4"><rect x="16" y="34" width="44" height="8" rx="4" fill="#2AB8E0"/><rect x="16" y="48" width="32" height="8" rx="4" fill="#2AB8E0"/><rect x="16" y="62" width="40" height="8" rx="4" fill="#2AB8E0"/></g><path d="M70,52 L90,52 M83,45 L90,52 L83,59" fill="none" stroke="#2AB8E0" stroke-width="1.5"/><g><rect x="102" y="34" width="44" height="8" rx="4" fill="#2AB8E0"/><rect x="102" y="48" width="32" height="8" rx="4" fill="#2AB8E0" fill-opacity="0.85"/><rect x="102" y="62" width="40" height="8" rx="4" fill="#2AB8E0" fill-opacity="0.7"/></g></svg></div><div class="mt-body"><div class="mt-k" style="color:#2AB8E0;">type 03</div><div class="mt-t">hiding latency</div><div class="mt-d">Motion that covers the wait — skeletons, progressive reveals, and transitions that fill the time the system needs to respond.</div><div class="mt-uxv"><span class="lbl">ux value</span><span class="val">Perceived speed — the wait feels shorter than it actually measures.</span></div></div></div>
+        <div class="mt"><div class="mt-dg"><svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect x="24" y="20" width="76" height="60" rx="6" fill="rgba(138,160,255,0.05)" stroke="#8AA0FF" stroke-opacity="0.5"/><rect x="40" y="32" width="26" height="18" rx="3" fill="#8AA0FF" fill-opacity="0.55"/><rect x="60" y="40" width="76" height="50" rx="6" fill="rgba(138,160,255,0.1)" stroke="#8AA0FF"/><rect x="78" y="54" width="30" height="20" rx="3" fill="#8AA0FF" fill-opacity="0.9"/><path d="M54,42 C66,46 70,50 80,56" fill="none" stroke="#8AA0FF" stroke-width="1.25" stroke-dasharray="2 3"/></svg></div><div class="mt-body"><div class="mt-k" style="color:#8AA0FF;">type 04</div><div class="mt-t">spatial design</div><div class="mt-d">Motion that keeps the world coherent — shared elements, depth, and direction so screens feel connected, not swapped.</div><div class="mt-uxv"><span class="lbl">ux value</span><span class="val">Orientation — the user always knows where they are and where things went.</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap">
+      <div class="s-head reveal"><span class="n">/ 04</span> <h2>the <b>dev handoff.</b></h2></div>
+      <p class="body reveal">A motion is only real once it ships. I hand every one off as a <em>property-level timing spec</em> an engineer can build from directly — then stay in the build to protect the timing and the feel.</p>
+
+      <div class="sub reveal"><span class="tick"></span> <b>timing spec</b> — feed-item.expand</div>
+      <div class="spec reveal">
+        <div class="r h"><div>property</div><div>from → to</div><div>duration</div><div>easing</div><div>delay</div></div>
+        <div class="r"><div class="em">card · scale</div><div>0.96 → 1.0</div><div>200ms</div><div>standard</div><div>0</div></div>
+        <div class="r"><div class="em">detail · opacity</div><div>0 → 1</div><div>120ms</div><div>entrance</div><div>40ms</div></div>
+        <div class="r"><div class="em">detail · translateY</div><div>16 → 0</div><div>200ms</div><div>entrance</div><div>40ms</div></div>
+        <div class="r"><div class="em">scrim · opacity</div><div>0 → 0.6</div><div>200ms</div><div>standard</div><div>0</div></div>
+      </div>
+
+      <div class="method reveal">
+        <div class="mstep"><div class="mi">01</div><div class="md">Every motion documented as an exact spec — <em>property, duration, curve, and delay</em> — so nothing is guessed at build time.</div></div>
+        <div class="mstep"><div class="mi">02</div><div class="md">I prototype the real motion in <em>Figma</em> so engineers see the target, not a paragraph describing it.</div></div>
+        <div class="mstep"><div class="mi">03</div><div class="md">I pair with engineering <em>through implementation</em>, reviewing builds frame by frame so the shipped motion matches the intent.</div></div>
+        <div class="mstep"><div class="mi">04</div><div class="md">Every motion ships with a <em>reduced-motion fallback</em>, so the experience holds for everyone.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap">
+      <div class="s-head reveal"><span class="n">/ 05</span> <h2>the <b>result.</b></h2></div>
+      <div class="results reveal">
+        <div><div class="k">4</div><div class="v">motion types<br/>one shared language</div></div>
+        <div><div class="k">100%</div><div class="v">decisions rooted<br/>in user value</div></div>
+        <div><div class="k">0</div><div class="v">motion for<br/>motion's sake</div></div>
+      </div>
+      <p class="pull reveal">motion that does a job — <b>never decoration.</b></p>
+    </div>
+  </section>
+
+  <section class="s close">
+    <div class="wrap">
+      <div class="eyebrow reveal"><span class="tick"></span> close <span class="slash">/</span> the takeaway</div>
+      <h2 class="reveal" style="margin-top:22px;">motion as <b>infrastructure</b> <span class="slash">/</span> not garnish.</h2>
+      <p class="lead reveal">Treated as a tier of the design system — tokens, curves, specs — motion stops being a thing one person owns and becomes something the whole org can build on, consistently, at speed.</p>
+      <a class="cta reveal" href="Ali Said — UX Motion.dc.html">back to work →</a>
+    </div>
+  </section>
+</main>
+
+<div class="foot">
+  <div class="wrap">
+    <div class="row">
+      <span>ali / said · ux motion</span>
+      <span class="morse"><i class="d"></i><i class="g"></i><i class="m"></i><i class="g"></i><i class="d"></i></span>
+      <span>© 2026</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold:0.1, rootMargin:'0px 0px -4% 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+    window.addEventListener('load', function(){ setTimeout(function(){ document.querySelectorAll('.reveal:not(.in)').forEach(function(el){ var r=el.getBoundingClientRect(); if(r.top < window.innerHeight) el.classList.add('in'); }); }, 200); });
+  })();
+</script>
+</body>
+</html>
